@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Всі замовлення</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container my-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>📦 Всі замовлення</h2>
+            <a href="{% url 'menu' %}" class="btn btn-secondary">Назад в меню</a>
+        </div>
+
+        <div class="card shadow-sm">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Клієнт</th>
+                        <th>Товар</th>
+                        <th class="text-center">Кількість</th>
+                        <th>Ціна за од.</th>
+                        <th>Сума</th>
+                        <th>Дата</th>
+                        <th class="text-end">Дії</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>{{ order.id }}</td>
+                        <td><strong>{{ order.customer.first_name }} {{ order.customer.last_name }}</strong></td>
+                        <td>{{ order.product.name }}</td>
+                        <td class="text-center">{{ order.quantity }} шт</td>
+                        <td>{{ order.product.price }} грн</td>
+                        <td class="fw-bold text-success">{{ order.product.price|add:0|mul:order.quantity }} грн</td>
+                        <td>{{ order.order_date|date:"d.m.Y H:i" }}</td>
+                        <td class="text-end">
+                            <a href="{% url 'delete_item' 'order' order.id %}" class="btn btn-sm btn-outline-danger">🗑️</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8" class="text-center py-4 text-muted">Жодного замовлення не знайдено.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>   

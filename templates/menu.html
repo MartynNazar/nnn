@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>ВЕБ-МАГАЗИН - Панель управління</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .sidebar { min-height: 100vh; background: #212529; color: white; padding-top: 20px; }
+        .sidebar a { color: #adb5bd; text-decoration: none; display: block; padding: 10px 20px; }
+        .sidebar a:hover, .sidebar a.active { background: #343a40; color: white; }
+        .card-stat { border-left: 5px solid #0d6efd; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2 sidebar px-0">
+                <h4 class="text-center text-white mb-4">🏪 Адмін-Центр</h4>
+                <a href="{% url 'menu' %}" class="active">📊 Головне меню</a>
+                <a href="{% url 'add_product' %}">🆕 Додати товар</a>
+                <a href="{% url 'add_customer' %}">👤 Додати клієнта</a>
+                <a href="{% url 'show_customers' %}">👥 Список клієнтів</a>
+                <a href="{% url 'create_order' %}">🛒 Створити замовлення</a>
+                <a href="{% url 'show_orders' %}">📦 Всі замовлення</a>
+                <hr class="text-secondary mx-3">
+                <div class="px-3">
+                    <button class="btn btn-sm btn-outline-warning w-100 mb-2" data-bs-toggle="modal" data-bs-target="#priceModal">💰 Масові ціни</button>
+                    <button class="btn btn-sm btn-outline-danger w-100" data-bs-toggle="modal" data-bs-target="#clearModal">🗑️ Очистити бази</button>
+                </div>
+            </div>
+
+            <div class="col-md-10 p-4">
+                {% if messages %}
+                    {% for msg in messages %}
+                        <div class="alert alert-info alert-dismissible fade show">{{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+                    {% endfor %}
+                {% endif %}
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>📊 Аналітика та моніторинг магазину</h2>
+                    <form method="GET" action="{% url 'menu' %}" class="d-flex gap-2">
+                        <select name="category" class="form-select" style="width: 250px;">
+                            <option value="">Всі категорії</option>
+                            {% for c in products_per_cat %}
+                                <option value="{{ c.category }}" {% if selected_category == c.category %}selected{% endif %}>{{ c.category|capfirst }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary">Фільтрувати</button>
+                    </form>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card p-3 shadow-sm card-stat">
+                            <small class="text-muted text-uppercase fw-bold">Загальний витяг (Оборот)</small>
+                            <h3 class="text-success mt-1">{{ total_sales }} грн</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card p-3 shadow-sm card-stat" style="border-left-color: #ffc107;">
+                            <small class="text-muted text-uppercase fw-bold">Середній чек замовлення</small>
+                            <h3 class="text-warning mt-1">{{ avg_check }} грн</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card p-3 shadow-sm card-stat" style="border-left-color: #198754;">
+                            <small class="text-muted text-uppercase fw-bold">Популярна категорія</small>
+                            <h4 class="text-dark mt-2">
+                                {% if popular_cat %}{{ popular_cat.product__category|upper }} ({{ popular_cat.count }} шт){% else %}Немає даних{% endif %}
+                            </h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card p-3 shadow-sm card-stat" style="border-left-color: #6c757d;">
+                            <small class="text-muted text-uppercase fw-bold">Категорій в базі</small>
+                            <h3 class="text-secondary mt-1">{{ products_per_cat|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="mb-3">📦 Наявні товари на складі</h3>
+                <div class="card shadow-sm">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Назва</th>
+                                <th>Категорія</th>
+                                <th>Ціна</th>
+                                <th>Залишок</th>
+                                <th class="text-end">Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in products %}
+                            <tr>
+                                <td>{{ p.product_id }}</td>
+                                <td><a href="{% url 'product_detail' p.product_id %}" class="fw-bold text-decoration-none">{{ p.name }}</a></td>
+                                <td><span class="badge bg-secondary">{{ p.category }}</span></td>
+                                <td class="fw-bold text-primary">{{ p.price }} грн</td>
+                                <td>
+                                    {% if p.stock > 0 %}
+                                        <span class="badge bg-success">{{ p.stock }} шт</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Немає в наявності</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <a href="{% url 'edit_product' p.product_id %}" class="btn btn-sm btn-outline-warning me-1">✏️</a>
+                                    <a href="{% url 'delete_item' 'product' p.product_id %}" class="btn btn-sm btn-outline-danger">🗑️</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="text-center py-4 text-muted">Жодного товару не знайдено.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="priceModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h5>💰 Масове керування цінами</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <form method="POST" action="{% url 'update_prices' %}" class="mb-3">
+                        {% csrf_token %}
+                        <label class="form-label fw-bold text-success">Підняти ціни ВСІХ товарів на %:</label>
+                        <div class="input-group"><input type="number" name="percentage" class="form-control" step="0.1" required><button type="submit" class="btn btn-success">📈 Підняти</button></div>
+                    </form>
+                    <form method="POST" action="{% url 'decrease_prices' %}">
+                        {% csrf_token %}
+                        <label class="form-label fw-bold text-danger">Знизити ціни ВСІХ товарів на %:</label>
+                        <div class="input-group"><input type="number" name="percentage" class="form-control" step="0.1" required><button type="submit" class="btn btn-danger">📉 Знизити</button></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="clearModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"><h5>⚠️ Незворотне видалення даних</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body d-flex flex-column gap-2">
+                    <a href="{% url 'clear_table' 'products' %}" class="btn btn-danger">❌ Видалити ВСІ Товари</a>
+                    <a href="{% url 'clear_table' 'customers' %}" class="btn btn-danger">❌ Видалити ВСІХ Клієнтів</a>
+                    <a href="{% url 'clear_table' 'orders' %}" class="btn btn-danger">❌ Видалити ВСІ Замовлення</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
