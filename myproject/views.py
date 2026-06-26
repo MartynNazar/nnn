@@ -1,120 +1,64 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db.models import Sum, Avg, Count, F
-from .models import Product, Customer, Order
+from django.db.models import Count, F, Sum
+from django.db import IntegrityError, transaction
+from myproject.models import Product, Customer, Order, CartItem
 
+# Категорії для генерації підказок
 CATEGORY_PROMPTS = {
     "смартфони": {
         "desc": "Флагманський смартфон із передовими технологіями, чудовою камерою та високою продуктивністю.",
-        "specs": "Екран: 6.7 OLED, Процесор: A17 Pro, Пам'ять: 256 ГБ, Камера: 48+12+12 Мп, Акумулятор: 4441 мАг"
-    },
-    "планшети": {
-        "desc": "Потужний і компактний планшет для навчання, роботи, творчості та перегляду медіаконтенту.",
-        "specs": "Екран: 11 IPS, Процесор: Apple M2, Пам'ять: 128 ГБ, Оперативна пам'ять: 8 ГБ, ОС: iPadOS"
-    },
-    "ноутбуки": {
-        "desc": "Високопродуктивний ноутбук для програмування, складних робочих завдань та сучасних ігор.",
-        "specs": "Екран: 16 IPS 165Гц, Процесор: Core i7-13700H, Відеокарта: RTX 4060, ОЗУ: 16 ГБ, SSD: 1 ТБ"
-    },
-    "комп'ютери": {
-        "desc": "Потужний системний блок для геймінгу на ультра-налаштуваннях та роботи з важкою графікою.",
-        "specs": "Процесор: Ryzen 7 7800X3D, Відеокарта: RTX 4070 Ti, ОЗУ: 32 ГБ DDR5, SSD: 2 ТБ NVMe, БП: 850W"
-    },
-    "монітори": {
-        "desc": "Ігровий монітор із високою частотою оновлення для максимальної плавності динамічних змін.",
-        "specs": "Діагональ: 27, Матриця: IPS, Роздільна здатність: 2560x1440 (2K), Частота: 144 Гц, Час відгуку: 1 мс"
-    },
-    "телевізори": {
-        "desc": "Сучасний телевізор із підтримкою Smart TV та реалістичною картинкою високої чіткості.",
-        "specs": "Діагональ: 55, Екран: 4K Ultra HD Neo QLED, Smart TV: ОС Tizen, Звук: 60 Вт, Частота: 120 Гц"
-    },
-    "навушники": {
-        "desc": "Повнорозмірні бездротові навушники з активним шумозаглушенням та преміальним звучанням.",
-        "specs": "Тип: Повнорозмірні, Підключення: Bluetooth 5.2 / Дротове, Шумозаглушення: ANC, Час роботи: до 30 год"
-    },
-    "колонки": {
-        "desc": "Портативна бездротова акустична система із глибоким басом та захистом від води.",
-        "specs": "Потужність: 40 Вт, Захист: IP67, Акумулятор: 7500 мАг, Час роботи: до 20 год, Інтерфейси: Bluetooth 5.1"
-    },
-    "годинники": {
-        "desc": "Смарт-годинник преміум-класу для відстеження фізичної активності, тренувань та показників здоров'я.",
-        "specs": "Екран: 1.92 OLED, Матеріал: Титан, Сапфірове скло, Датчики: Пульсометр, ЕКГ, SpO2, Вологозахист: 100м"
-    },
-    "приставки": {
-        "desc": "Ігрова консоль нового покоління для неймовірного геймінгу у високій роздільній здатності.",
-        "specs": "Процесор: AMD Zen 2, Графіка: RDNA 2, Пам'ять: 825 ГБ SSD, Підтримка: 4K 120Hz, Комплектація: 1 геймпад"
-    },
-    "ігри": {
-        "desc": "Масштабна пригодницька гра з відкритим світом, захоплюючим сюжетом та сучасною графікою.",
-        "specs": "Платформа: PlayStation 5, Жанр: RPG / Action, Носій: Blu-ray Диск, Локалізація: Повна українська версія"
-    },
-    "мишки": {
-        "desc": "Бездротова кіберспортивна ігрова миша з надлегким корпусом та високоточним оптичним сенсором.",
-        "specs": "Сенсор: Оптичний 30000 DPI, Кількість кнопок: 5, Вага: 63 г, Підключення: Бездротове / USB, Час роботи: 90 год"
-    },
-    "клавіатури": {
-        "desc": "Механічна ігрова клавіатура з надійними перемикачами та яскравим підсвічуванням клавіш.",
-        "specs": "Тип: Механічна, Перемикачі: Cherry MX Red, Формат: TKL (80%), Підсвічування: RGB, Матеріал корпусу: Алюміній"
-    },
-    "відеокарти": {
-        "desc": "Топова графічна карта для забезпечення максимального FPS у сучасних іграх при 4K та трасуванні променів.",
-        "specs": "Пам'ять: 16 ГБ GDDR6X, Шина пам'яті: 256 біт, Частота: 2610 МГц, Інтерфейс: PCI Express 4.0, Кулери: 3"
-    },
-    "процесори": {
-        "desc": "Високопродуктивний багатоядерний процесор для потужних ігрових систем та складних обчислень.",
-        "specs": "Сокет: AM5, Кількість ядер: 8, Кількість потоків: 16, Базова частота: 4.2 ГГц, Максимальна: 5.0 ГГц"
-    },
-    "пам'ять": {
-        "desc": "Швидкісний комплект оперативної пам'яті нового покоління для підвищення стабільності та швидкості системи.",
-        "specs": "Тип: DDR5, Об'єм: 32 ГБ (2x16 ГБ), Частота: 6000 МГц, Таймінги: CL30, Підсвічування: RGB"
-    },
-    "накопичувачі": {
-        "desc": "Швидкісний твердотільний накопичувач для миттєвого завантаження системи, програм та ігор.",
-        "specs": "Тип: SSD M.2 NVMe, Об'єм: 1 ТБ, Швидкість читання: 7300 МБ/с, Швидкість запису: 6000 МБ/с, Інтерфейс: PCIe 4.0"
-    },
-    "материнські плати": {
-        "desc": "Надійна материнська плата з потужною системою живлення та широкими можливостями розширення.",
-        "specs": "Чіпсет: Intel Z790, Сокет: LGA1700, Форм-фактор: ATX, Слоти ОЗУ: 4xДДR5, Бездротові технології: Wi-Fi 6E, Bluetooth"
-    },
-    "повербанки": {
-        "desc": "Універсальний зовнішній акумулятор великої ємності з можливістю швидкої зарядки кількох пристроїв.",
-        "specs": "Ємність: 20000 мАг, Потужність: 65 Вт, Порти: 2xUSB, 1xType-C, Технології: Power Delivery, Quick Charge 3.0"
-    },
-    "роутери": {
-        "desc": "Двохдіапазонний гігабітний маршрутизатор для створення стабільного бездротового покриття у великому домі.",
-        "specs": "Стандарт: Wi-Fi 6 (802.11ax), Швидкість: до 2976 Мбіт/с, Порти: 4xLAN 1Гбіт/с, 1xWAN 1Гбіт/с, Антени: 4"
-    },
-    "принтери": {
-        "desc": "БФП з кольоровим струменевим друком та вбудованою фабрикою чорнила для економного виготовлення документів.",
-        "specs": "Тип: Струменевий кольоровий, Функції: Друк, сканування, копіювання, Інтерфейси: Wi-Fi, USB, СБПЧ: вбудована"
-    },
-    "камери": {
-        "desc": "Бездзеркальна цифрова фотокамера зі змінною оптикою для професійної зйомки фото та відео.",
-        "specs": "Матриця: 24.2 Мп Full-Frame, Відео: 4K 60p, Екран: Поворотний 3.0 сенсорний, Стабілізація: 5-осьова вбудована"
-    },
-    "дрони": {
-        "desc": "Квадрокоптер із високоякісною камерою та інтелектуальними режимами польоту для чудових аерознімків.",
-        "specs": "Камера: 4K CMOS, Час польоту: до 34 хв, Дальність: до 12 км, Вага: 249 г, Датчики: виявлення перешкод"
-    },
-    "кабелі": {
-        "desc": "Надійний екранований кабель для швидкої передачи даних та високопотужної зарядки пристроїв.",
-        "specs": "Тип роз'ємів: Type-C - Type-C, Довжина: 1.2 м, Пропускна здатність: 100W, Матеріал: Нейлонове обплетення"
-    },
-    "побутова техніка": {
-        "desc": "Розумний робот-пилосос для щоденного сухого та вологого прибирання підлогових покриттів.",
-        "specs": "Потужність всмокування: 5000 Па, Навігація: LiDAR, Акумулятор: 5200 мАг, Керування: Додаток Mi Home"
-    }
+        "specs": "Екран: 6.7 OLED, Процесор: A17 Pro, Пам'ять: 256 ГБ"},
+    "планшети": {"desc": "Потужний і компактний планшет для навчання, роботи, творчості та медіаконтенту.",
+                 "specs": "Екран: 11 IPS, Процесор: Apple M2, Пам'ять: 128 ГБ"},
+    "ноутбуки": {"desc": "Високопродуктивний ноутбук для програмування, складних робочих завдань та сучасних ігор.",
+                 "specs": "Екран: 16 IPS, Процесор: Core i7, Відеокарта: RTX 4060, ОЗУ: 16 ГБ"},
+    "комп'ютери": {"desc": "Потужний системний блок для геймінгу на ультра-налаштуваннях.",
+                   "specs": "Ryzen 7 7800X3D, RTX 4070 Ti, ОЗУ: 32 ГБ DDR5, SSD: 2 ТБ"},
+    "монітори": {"desc": "Ігровий монітор із високою частотою оновлення для максимальної плавності.",
+                 "specs": "Діагональ: 27, Матриця: IPS, 2K, Частота: 144 Гц, 1 мс"},
+    "відеокарти": {"desc": "Топова графічна карта для забезпечення максимального FPS у сучасних іграх.",
+                   "specs": "Пам'ять: 16 ГБ GDDR6X, Шина: 256 біт, Інтерфейс: PCIe 4.0"}
 }
 
-def index(request):
-    cat_filter = request.GET.get('category', '').strip().lower()
-    if cat_filter:
-        products = Product.objects.filter(category=cat_filter)
-    else:
-        products = Product.objects.all()
 
-    orders_all = Order.objects.all().select_related('product')
-    total_sales = sum(item.product.price * item.quantity for item in orders_all)
+# Декоратор для перевірки, чи вибрав користувач акаунт клієнта
+def customer_login_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if 'customer_id' not in request.session:
+            messages.warning(request, "🔒 Будь ласка, увійдіть у свій акаунт клієнта, щоб отримати доступ до магазину.")
+            return redirect('login')
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
+
+
+# Супутні дані про клієнта та кількість товарів у кошику для передачі в контекст базового шаблону
+def get_base_context(request):
+    context = {}
+    if 'customer_id' in request.session:
+        customer = Customer.objects.filter(pk=request.session['customer_id']).first()
+        if customer:
+            context['current_customer'] = customer
+            context['cart_count'] = CartItem.objects.filter(customer=customer).aggregate(total=Sum('quantity')).get(
+                'total') or 0
+    return context
+
+
+@customer_login_required
+def index(request):
+    context = get_base_context(request)
+    cat_filter = request.GET.get('category', '').strip().lower()
+    search_query = request.GET.get('search', '').strip()
+
+    products = Product.objects.all()
+    if cat_filter:
+        products = products.filter(category=cat_filter)
+    if search_query:
+        products = products.filter(name__icontains=search_query)
+
+    sales_data = Order.objects.aggregate(total=Sum(F('product__price') * F('quantity')))
+    total_sales = sales_data.get('total') or 0
 
     order_counts = Order.objects.count()
     avg_check = total_sales / order_counts if order_counts > 0 else 0
@@ -122,20 +66,192 @@ def index(request):
     popular_cat = Order.objects.values('product__category').annotate(count=Count('id')).order_by('-count').first()
     products_per_cat = Product.objects.values('category').annotate(count=Count('product_id'))
 
-    return render(request, 'menu.html', {
+    # Створюємо список категорій з красивими іконками за замовчуванням
+    icons_map = {"смартфони": "📱", "планшети": "📟", "ноутбуки": "💻", "комп'ютери": "🖥️", "монітори": "📺",
+                 "відеокарти": "🔌"}
+    categories_with_icons = []
+    for item in products_per_cat:
+        cat_name = item['category']
+        categories_with_icons.append({
+            'name': cat_name,
+            'count': item['count'],
+            'icon': icons_map.get(cat_name, "📦")
+        })
+
+    context.update({
         'products': products,
         'total_sales': round(total_sales, 2),
         'avg_check': round(avg_check, 2),
         'popular_cat': popular_cat,
-        'products_per_cat': products_per_cat,
-        'selected_category': cat_filter
+        'categories': categories_with_icons,
+        'selected_category': cat_filter,
+        'search_query': search_query
     })
+    return render(request, 'menu.html', context)
 
+
+# --- Ситема логіну / Реєстрації через Сесії ---
+
+def login_view(request):
+    if request.method == 'POST':
+        customer_id = request.POST.get('customer_id')
+
+        if customer_id:
+            try:
+                # Шукаємо клієнта в базі за його ID
+                customer = Customer.objects.get(pk=customer_id)
+
+                # Записуємо ID клієнта в сесію, щоб сайт "пам'ятав" його
+                request.session['customer_id'] = customer.pk
+                request.session['customer_name'] = f"{customer.first_name} {customer.last_name}"
+
+                messages.success(request, f"Успішний вхід! Вітаємо, {customer.first_name}.")
+                return redirect('menu')  # Перенаправляє на головну сторінку магазину
+            except Customer.DoesNotExist:
+                messages.error(request, "Помилка: такого клієнта не знайдено.")
+        else:
+            messages.error(request, "Будь ласка, оберіть профіль для входу.")
+
+    # Якщо це GET-запит (просто відкрили сторінку), передаємо всіх клієнтів для випадаючого списку
+    existing_customers = Customer.objects.all()
+    return render(request, 'auth/login.html', {'existing_customers': existing_customers})
+def register_view(request):
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        email = request.POST.get('email', '').strip()
+
+        if not first_name or not last_name or not email:
+            messages.error(request, "❌ Заповніть усі поля!")
+            return redirect('register')
+
+        try:
+            customer = Customer.objects.create(first_name=first_name, last_name=last_name, email=email)
+            request.session['customer_id'] = customer.id
+            messages.success(request, f"🎉 Акаунт успішно створено! Ласкаво просимо, {first_name}!")
+            return redirect('menu')
+        except IntegrityError:
+            messages.error(request, "❌ Клієнт з таким Email вже існує в базі!")
+            return redirect('register')
+
+    return render(request, 'auth/register.html')
+
+
+def logout_view(request):
+    if 'customer_id' in request.session:
+        del request.session['customer_id']
+    messages.info(request, "🚪 Ви вийшли з акаунта.")
+    return redirect('login')
+
+
+# --- Логіка Багатотоварного Кошика ---
+
+@customer_login_required
+def cart_detail(request):
+    context = get_base_context(request)
+    customer = context['current_customer']
+    cart_items = CartItem.objects.filter(customer=customer).select_related('product')
+
+    total_cart_price = sum(item.total_price for item in cart_items)
+
+    context.update({
+        'cart_items': cart_items,
+        'total_cart_price': round(total_cart_price, 2)
+    })
+    return render(request, 'cart.html', context)
+
+
+@customer_login_required
+def add_to_cart(request, product_id):
+    product = get_object_or_404(Product, pk=product_id)
+    customer = get_object_or_404(Customer, pk=request.session['customer_id'])
+
+    if product.stock <= 0:
+        messages.error(request, f"❌ Товар '{product.name}' закінчився на складі!")
+        return redirect('menu')
+
+    cart_item, created = CartItem.objects.get_or_create(customer=customer, product=product)
+    if not created:
+        if cart_item.quantity < product.stock:
+            cart_item.quantity += 1
+            cart_item.save()
+            messages.success(request, f"🟣 Кількість '{product.name}' в кошику збільшено!")
+        else:
+            messages.warning(request, f"⚠️ Не можна додати більше. На складі є лише {product.stock} шт.")
+    else:
+        messages.success(request, f"🛒 '{product.name}' додано до кошика!")
+
+    return redirect('menu')
+
+
+@customer_login_required
+def update_cart_quantity(request, item_id, action):
+    cart_item = get_object_or_404(CartItem, pk=item_id, customer_id=request.session['customer_id'])
+    if action == 'inc':
+        if cart_item.quantity < cart_item.product.stock:
+            cart_item.quantity += 1
+            cart_item.save()
+        else:
+            messages.warning(request, f"⚠️ Максимально доступно на складі: {cart_item.product.stock} шт.")
+    elif action == 'dec':
+        if cart_item.quantity > 1:
+            cart_item.quantity -= 1
+            cart_item.save()
+        else:
+            cart_item.delete()
+            messages.info(request, "🗑️ Товар видалено з кошика.")
+    elif action == 'delete':
+        cart_item.delete()
+        messages.info(request, "🗑️ Товар видалено з кошика.")
+
+    return redirect('cart_detail')
+
+
+@customer_login_required
+def checkout(request):
+    customer = get_object_or_404(Customer, pk=request.session['customer_id'])
+    cart_items = CartItem.objects.filter(customer=customer).select_related('product')
+
+    if not cart_items.exists():
+        messages.error(request, "❌ Ваш кошик порожній!")
+        return redirect('menu')
+
+    # Використовуємо транзакцію бази даних, щоб якщо один товар зламається, все замовлення скасувалося
+    with transaction.atomic():
+        for item in cart_items:
+            product = item.product
+            if product.stock < item.quantity:
+                messages.error(request,
+                               f"❌ Помилка: На складі залишилось всього {product.stock} шт. товару '{product.name}'!")
+                return redirect('cart_detail')
+
+            # Створюємо офіційне замовлення
+            Order.objects.create(customer=customer, product=product, quantity=item.quantity)
+
+            # Зменшуємо залишок на складі
+            product.stock -= item.quantity
+            product.save()
+
+        # Очищуємо кошик після успішного оформлення
+        cart_items.delete()
+
+    messages.success(request, "🎉 Замовлення успішно оформлено для всіх товарів! Дякуємо за покупку!")
+    return redirect('menu')
+
+
+# --- Інші стандартні функції, адаптовані під дизайн ---
+
+@customer_login_required
 def product_detail(request, pk):
+    context = get_base_context(request)
     product = get_object_or_404(Product, pk=pk)
-    return render(request, 'product_detail.html', {'product': product})
+    context['product'] = product
+    return render(request, 'product_detail.html', context)
 
+
+@customer_login_required
 def add_product(request):
+    context = get_base_context(request)
     if request.method == 'POST':
         name = request.POST.get('name')
         category = request.POST.get('category', '').strip().lower()
@@ -144,13 +260,18 @@ def add_product(request):
         description = request.POST.get('description')
         specs = request.POST.get('specs')
 
-        Product.objects.create(name=name, category=category, price=price, stock=stock, description=description, specs=specs)
-        messages.success(request, "✅ Товар успішно додано!")
+        Product.objects.create(name=name, category=category, price=price, stock=stock, description=description,
+                               specs=specs)
+        messages.success(request, "✅ Новий гаджет успішно додано до каталогу!")
         return redirect('menu')
 
-    return render(request, 'add_product.html', {'prompts': CATEGORY_PROMPTS})
+    context['prompts'] = CATEGORY_PROMPTS
+    return render(request, 'add_product.html', context)
 
+
+@customer_login_required
 def edit_product(request, pk):
+    context = get_base_context(request)
     product = get_object_or_404(Product, pk=pk)
     if request.method == 'POST':
         product.name = request.POST.get('name') or product.name
@@ -159,77 +280,53 @@ def edit_product(request, pk):
         product.description = request.POST.get('description') or product.description
         product.specs = request.POST.get('specs') or product.specs
         product.save()
-        messages.success(request, "✅ Товар оновлено!")
+        messages.success(request, "✅ Дані товару успішно оновлено!")
         return redirect('menu')
-    return render(request, 'edit_product.html', {'product': product})
+    context['product'] = product
+    return render(request, 'edit_product.html', context)
 
-def add_customer(request):
-    if request.method == 'POST':
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        email = request.POST.get('email')
-        try:
-            Customer.objects.create(first_name=first_name, last_name=last_name, email=email)
-            messages.success(request, "✅ Клієнта додано!")
-            return redirect('menu')
-        except:
-            messages.error(request, "❌ Такий Email вже існує!")
-            return redirect('add_customer')
-    return render(request, 'add_customer.html')
 
+@customer_login_required
 def show_customers(request):
+    context = get_base_context(request)
     customers_list = Customer.objects.all()
     customers_data = []
     for c in customers_list:
         count = Order.objects.filter(customer=c).count()
         customers_data.append({'customer': c, 'order_count': count})
-    return render(request, 'customers.html', {'customers_data': customers_data})
+    context['customers_data'] = customers_data
+    return render(request, 'customers.html', context)
 
-def create_order(request):
-    if request.method == 'POST':
-        customer_id = request.POST.get('customer')
-        product_id = request.POST.get('product')
-        quantity = int(request.POST.get('quantity', 0))
 
-        product = get_object_or_404(Product, pk=product_id)
-        customer = get_object_or_404(Customer, pk=customer_id)
-
-        if product.stock <= 0:
-            messages.error(request, f"❌ '{product.name}' закінчився!")
-            return redirect('create_order')
-        if quantity <= 0 or quantity > product.stock:
-            messages.error(request, f"❌ Доступно лише {product.stock} шт.")
-            return redirect('create_order')
-
-        Order.objects.create(customer=customer, product=product, quantity=quantity)
-        product.stock -= quantity
-        product.save()
-
-        messages.success(request, "✅ Замовлення оформлено!")
-        return redirect('menu')
-
-    return render(request, 'order_form.html', {'customers': Customer.objects.all(), 'products': Product.objects.all()})
-
+@customer_login_required
 def show_orders(request):
-    orders = Order.objects.all().select_related('customer', 'product')
-    return render(request, 'orders.html', {'orders': orders})
+    context = get_base_context(request)
+    orders = Order.objects.all().select_related('customer', 'product').order_by('-order_date')
+    for order in orders:
+        order.total_price = order.product.price * order.quantity
+    context['orders'] = orders
+    return render(request, 'orders.html', context)
 
+
+@customer_login_required
 def update_prices(request):
     if request.method == 'POST':
         percentage = float(request.POST.get('percentage', 0))
-        factor = 1 + (percentage / 100.0)
-        Product.objects.update(price=F('price') * factor)
-        messages.success(request, f"📈 Ціни підвищено на {percentage}%!")
+        Product.objects.update(price=F('price') * (1 + percentage / 100.0))
+        messages.success(request, f"📈 Ціни по всьому каталогу підвищено на {percentage}%!")
     return redirect('menu')
 
+
+@customer_login_required
 def decrease_prices(request):
     if request.method == 'POST':
         percentage = float(request.POST.get('percentage', 0))
-        factor = 1 - (percentage / 100.0)
-        Product.objects.update(price=F('price') * factor)
-        messages.success(request, f"📉 Ціни знижено на {percentage}%!")
+        Product.objects.update(price=F('price') * (1 - percentage / 100.0))
+        messages.success(request, f"📉 Масова знижка діє! Ціни знижено на {percentage}%!")
     return redirect('menu')
 
+
+@customer_login_required
 def delete_item(request, item_type, pk):
     if item_type == 'product':
         get_object_or_404(Product, pk=pk).delete()
@@ -237,9 +334,11 @@ def delete_item(request, item_type, pk):
         get_object_or_404(Customer, pk=pk).delete()
     elif item_type == 'order':
         get_object_or_404(Order, pk=pk).delete()
-    messages.success(request, "🗑️ Запис видалено!")
+    messages.success(request, "🗑️ Запис назавжди видалено з системи.")
     return redirect('menu')
 
+
+@customer_login_required
 def clear_table(request, table_name):
     if table_name == 'products':
         Product.objects.all().delete()
@@ -247,5 +346,5 @@ def clear_table(request, table_name):
         Customer.objects.all().delete()
     elif table_name == 'orders':
         Order.objects.all().delete()
-    messages.success(request, "🗑️ Дані очищено!")
+    messages.success(request, f"🗑️ Усі записи з таблиці {table_name} успішно видалено.")
     return redirect('menu')

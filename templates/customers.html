@@ -2,52 +2,49 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Список клієнтів</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>База клієнтів</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-light">
-    <div class="container my-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>👥 Список всіх клієнтів</h2>
-            <a href="{% url 'menu' %}" class="btn btn-secondary">Назад в меню</a>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-3xl mx-auto">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-black text-white"><i class="fa-solid fa-users text-emerald-400 mr-2"></i> База даних клієнтів (100+)</h2>
+            <a href="{% url 'menu' %}" class="text-sm text-slate-400 hover:text-purple-400 transition"><i class="fa-solid fa-arrow-left mr-1"></i> Назад в магазин</a>
         </div>
 
-        <div class="card shadow-sm">
-            <table class="table table-hover mb-0 align-middle">
-                <thead class="table-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Ім'я</th>
-                        <th>Прізвище</th>
-                        <th>Email</th>
-                        <th class="text-center">Замовлень</th>
-                        <th class="text-end">Дії</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in customers_data %}
-                    <tr>
-                        <td>{{ item.customer.id }}</td>
-                        <td>{{ item.customer.first_name }}</td>
-                        <td>{{ item.customer.last_name }}</td>
-                        <td>{{ item.customer.email }}</td>
-                        <td class="text-center">
-                            {% if item.order_count > 0 %}
-                                <span class="badge bg-success">{{ item.order_count }}</span>
-                            {% else %}
-                                <span class="badge bg-secondary">0</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-end">
-                            <a href="{% url 'delete_item' 'customer' item.customer.id %}" class="btn btn-sm btn-outline-danger">🗑️ Видалити</a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="6" class="text-center py-4 text-muted">Жодного клієнта не знайдено.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm border-collapse">
+                    <thead>
+                        <tr class="bg-slate-950 border-b border-slate-800 text-xs font-bold uppercase text-slate-400">
+                            <th class="p-4">Повне ім'я</th>
+                            <th class="p-4">Електронна пошта</th>
+                            <th class="p-4 text-center">К-сть замовлень</th>
+                            <th class="p-4 text-center">Дія</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-950 text-slate-300">
+                        {% for item in customers_data %}
+                            <tr class="hover:bg-slate-800/30 transition">
+                                <td class="p-4 font-bold text-white">{{ item.customer.first_name }} {{ item.customer.last_name }}</td>
+                                <td class="p-4 font-mono text-xs text-slate-400">{{ item.customer.email }}</td>
+                                <td class="p-4 text-center">
+                                    <span class="text-xs bg-slate-950 px-2.5 py-1 rounded-full text-emerald-400 font-bold">
+                                        {{ item.order_count }}
+                                    </span>
+                                </td>
+                                <td class="p-4 text-center">
+                                    <a href="{% url 'delete_item' 'customer' item.customer.pk %}" onclick="return confirm('Видалити цього клієнта з бази?')" class="text-slate-500 hover:text-red-400 p-2"><i class="fa-solid fa-user-minus text-xs"></i></a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
+
 </body>
 </html>

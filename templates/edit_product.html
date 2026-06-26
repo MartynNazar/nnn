@@ -3,43 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <title>Редагувати товар</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-light">
-    <div class="container my-5" style="max-width: 650px;">
-        <h2 class="mb-4">✏️ Редагування товару</h2>
-        <form method="POST" class="card p-4 shadow-sm bg-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+        <h2 class="text-xl font-black text-white mb-6">⚙️ Редагувати гаджет</h2>
+
+        <form action="{% url 'edit_product' product.pk %}" method="POST" class="space-y-4">
             {% csrf_token %}
-            <div class="mb-3">
-                <label class="form-label fw-bold">Назва товару:</label>
-                <input type="text" name="name" class="form-control" value="{{ product.name }}" required>
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Назва моделі</label>
+                <input type="text" name="name" value="{{ product.name }}" class="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition">
             </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">Категорія:</label>
-                <input type="text" name="category" class="form-control" value="{{ product.category }}" disabled>
-                <small class="text-muted">Категорія не може бути змінена</small>
-            </div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">Ціна (грн):</label>
-                    <input type="number" name="price" class="form-control" step="0.01" value="{{ product.price }}" required>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Ціна (грн)</label>
+                    <input type="number" name="price" step="0.01" value="{{ product.price }}" class="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition">
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">Кількість на складі:</label>
-                    <input type="number" name="stock" class="form-control" value="{{ product.stock }}" required>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Кількість на складі</label>
+                    <input type="number" name="stock" value="{{ product.stock }}" class="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition">
                 </div>
             </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">Опис:</label>
-                <textarea name="description" class="form-control" rows="3" required>{{ product.description }}</textarea>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Опис</label>
+                <textarea name="description" rows="3" class="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition resize-none">{{ product.description }}</textarea>
             </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">Технічні характеристики:</label>
-                <input type="text" name="specs" class="form-control" value="{{ product.specs }}" required>
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Характеристики</label>
+                <textarea name="specs" rows="3" class="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition resize-none">{{ product.specs }}</textarea>
             </div>
-            <button type="submit" class="btn btn-success w-100">💾 Зберегти зміни</button>
-            <a href="{% url 'menu' %}" class="btn btn-secondary w-100 mt-2">Скасувати</a>
+
+            <div class="flex items-center gap-3 pt-2">
+                <a href="{% url 'menu' %}" class="bg-slate-950 border border-slate-800 text-center py-3 px-4 rounded-xl text-sm font-bold text-slate-400 hover:text-white transition">Назад</a>
+                <button type="submit" class="flex-grow bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm py-3 rounded-xl transition">Зберегти зміни</button>
+                <a href="{% url 'delete_item' 'product' product.pk %}" onclick="return confirm('Видалити цей товар з бази?')" class="bg-red-950/40 border border-red-900/60 text-red-400 p-3 rounded-xl hover:bg-red-600 hover:text-white transition" title="Видалити"><i class="fa-solid fa-trash-can"></i></a>
+            </div>
         </form>
     </div>
+
 </body>
 </html>
