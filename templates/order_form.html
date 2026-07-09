@@ -1,55 +1,40 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <title>Оформлення замовлення</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4">
+{% extends 'base.html' %}
+{% block content %}
 
-    <div class="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-        <h2 class="text-xl font-black text-white mb-6"><i class="fa-solid fa-basket-shopping text-purple-500 mr-2"></i> Оформлення замовлення</h2>
+<div class="max-w-md mx-auto bg-gray-900 border border-gray-800 rounded-3xl p-6 md:p-8 shadow-2xl">
+    <h2 class="text-2xl font-black text-white mb-2"><i class="fa-solid fa-file-invoice-dollar text-purple-500 mr-2"></i>Швидке замовлення</h2>
+    <p class="text-xs text-gray-500 mb-6">Оформлення прямої покупки окремого товару без використання кошика.</p>
 
-        <form method="POST" class="space-y-4">
-            {% csrf_token %}
+    <form method="POST" class="space-y-4">
+        {% csrf_token %}
+        <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Виберіть покупця</label>
+            <select name="customer" class="w-full bg-black border border-gray-800 p-3 rounded-xl text-sm text-white focus:outline-none focus:border-purple-600 font-bold" required>
+                {% for customer in customers %}
+                    <option value="{{ customer.customer_id }}">{{ customer.last_name }} {{ customer.first_name }} ({{ customer.email }})</option>
+                {% endfor %}
+            </select>
+        </div>
 
-            <div>
-                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Виберіть клієнта</label>
-                <select name="customer" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition">
-                    <option value="" disabled selected>Хто робить замовлення?</option>
-                    {% for customer in customers %}
-                        <option value="{{ customer.pk }}">{{ customer.first_name }} {{ customer.last_name }} ({{ customer.email }})</option>
-                    {% endfor %}
-                </select>
-                <p class="text-[11px] text-slate-500 mt-1">Немає в списку? <a href="{% url 'add_customer' %}" class="text-purple-400 hover:underline">Додати нового клієнта</a></p>
-            </div>
+        <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Виберіть товар</label>
+            <select name="product" id="productSelect" class="w-full bg-black border border-gray-800 p-3 rounded-xl text-sm text-white focus:outline-none focus:border-purple-600 font-bold" required>
+                {% for product in products %}
+                    <option value="{{ product.product_id }}" data-stock="{{ product.stock }}">{{ product.name }} (Доступно: {{ product.stock }} шт.)</option>
+                {% endfor %}
+            </select>
+        </div>
 
-            <div>
-                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Товар</label>
-                <select name="product" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition">
-                    {% if product %}
-                        <option value="{{ product.pk }}" selected>{{ product.name }} — {{ product.price }} грн</option>
-                    {% else %}
-                        <option value="" disabled selected>Виберіть гаджет...</option>
-                        {% for p in products %}
-                            <option value="{{ p.pk }}">{{ p.name }} ({{ p.price }} грн)</option>
-                        {% endfor %}
-                    {% endif %}
-                </select>
-            </div>
+        <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Кількість (шт)</label>
+            <input type="number" name="quantity" value="1" min="1" class="w-full bg-black border border-gray-800 p-3 rounded-xl text-sm text-white focus:outline-none focus:border-purple-600 font-mono font-bold" required>
+        </div>
 
-            <div>
-                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Кількість (шт)</label>
-                <input type="number" name="quantity" min="1" value="1" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition">
-            </div>
+        <div class="flex justify-end gap-3 pt-4 border-t border-gray-800">
+            <a href="{% url 'menu' %}" class="bg-gray-800 hover:bg-gray-700 text-gray-300 px-5 py-2.5 rounded-xl text-xs font-bold transition">Назад</a>
+            <button type="submit" class="bg-purple-600 hover:bg-purple-500 text-white px-6 py-2.5 rounded-xl text-xs font-bold transition shadow-lg shadow-purple-950/40">Оформити</button>
+        </div>
+    </form>
+</div>
 
-            <div class="flex gap-3 pt-2">
-                <a href="{% url 'menu' %}" class="w-1/3 bg-slate-950 border border-slate-800 text-center py-3 rounded-xl text-sm font-bold text-slate-400 hover:text-white transition">Скасувати</a>
-                <button type="submit" class="w-2/3 bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm py-3 rounded-xl transition shadow-lg shadow-purple-950/50">Підтвердити замовлення</button>
-            </div>
-        </form>
-    </div>
-
-</body>
-</html>
+{% endblock %}

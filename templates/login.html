@@ -3,8 +3,8 @@
 
 <div class="max-w-md mx-auto bg-gray-900 border border-gray-800 rounded-3xl p-6 md:p-8 shadow-2xl">
     <div class="text-center mb-6">
-        <h2 class="text-2xl font-black text-white"><i class="fa-solid fa-user-plus text-purple-500 mr-2"></i> Реєстрація покупця</h2>
-        <p class="text-xs text-gray-500 mt-1">Створення нового облікового запису клієнта для бази даних магазину «МАРТИН.».</p>
+        <h2 class="text-2xl font-black text-white"><i class="fa-solid fa-user-tag text-purple-500 mr-2"></i>Вхід для покупців</h2>
+        <p class="text-xs text-gray-500 mt-1">Введіть ваші дані для доступу до персонального кошика. Якщо ви вперше тут — система зареєструє вас автоматично.</p>
     </div>
 
     <form method="POST" class="space-y-4">
@@ -18,13 +18,10 @@
             <input type="text" name="last_name" class="w-full bg-black border border-gray-800 p-3 rounded-xl text-sm text-white focus:outline-none focus:border-purple-600 font-bold" required>
         </div>
         <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Електронна пошта</label>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Електронна пошта (Email)</label>
             <input type="email" name="email" class="w-full bg-black border border-gray-800 p-3 rounded-xl text-sm text-white focus:outline-none focus:border-purple-600 font-mono" required>
         </div>
-        <div class="flex justify-end gap-3 pt-2">
-            <a href="{% url 'menu' %}" class="bg-gray-800 hover:bg-gray-700 text-gray-400 px-4 py-2 rounded-xl text-xs font-bold transition">Назад</a>
-            <button type="submit" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-5 py-2 rounded-xl text-xs uppercase tracking-wider transition">Зареєструвати</button>
-        </div>
+        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest transition shadow-lg shadow-purple-950/40">Увійти в Маркет</button>
     </form>
 </div>
 

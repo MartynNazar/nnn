@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="max-w-md mx-auto bg-gray-900 border border-gray-800 rounded-3xl p-6 md:p-8 shadow-2xl">
+    <div class="text-center mb-6">
+        <h2 class="text-2xl font-black text-white"><i class="fa-solid fa-lock text-yellow-500 mr-2"></i>Панель адміна</h2>
+        <p class="text-xs text-gray-500 mt-1">Авторизація через логін та пароль суперюзера Django для доступу до зміни цін, статистики та очищення баз даних.</p>
+    </div>
+
+    <form method="POST" class="space-y-4">
+        {% csrf_token %}
+        {% for field in form %}
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">{{ field.label }}</label>
+                <input type="{{ field.field.widget.input_type }}" name="{{ field.html_name }}" class="w-full bg-black border border-gray-800 p-3 rounded-xl text-sm text-white focus:outline-none focus:border-purple-600" required>
+            </div>
+        {% endfor %}
+        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest transition shadow-lg shadow-purple-950/40">Авторизуватись як Адмін</button>
+    </form>
+</div>
+
+{% endblock %}

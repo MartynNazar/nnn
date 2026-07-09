@@ -1,50 +1,43 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <title>Редагувати товар</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4">
+{% extends 'base.html' %}
+{% block content %}
 
-    <div class="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-        <h2 class="text-xl font-black text-white mb-6">⚙️ Редагувати гаджет</h2>
+<div class="max-w-2xl mx-auto bg-gray-900 border border-gray-800 rounded-3xl p-6 md:p-8 shadow-2xl">
+    <h2 class="text-2xl font-black text-white mb-2"><i class="fa-solid fa-pen-to-square text-purple-500 mr-2"></i>Редагування товару</h2>
+    <p class="text-xs text-gray-500 mb-6">Зміна параметрів існуючого гаджета у базі « shop.db ».</p>
 
-        <form action="{% url 'edit_product' product.pk %}" method="POST" class="space-y-4">
-            {% csrf_token %}
+    <form method="POST" class="space-y-4">
+        {% csrf_token %}
+        <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Назва моделі</label>
+            <input type="text" name="name" value="{{ product.name }}" class="w-full bg-black border border-gray-800 p-3 rounded-xl text-sm text-white focus:outline-none focus:border-purple-600 font-bold" required>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Назва моделі</label>
-                <input type="text" name="name" value="{{ product.name }}" class="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition">
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Ціна (грн)</label>
-                    <input type="number" name="price" step="0.01" value="{{ product.price }}" class="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Кількість на складі</label>
-                    <input type="number" name="stock" value="{{ product.stock }}" class="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition">
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Опис</label>
-                <textarea name="description" rows="3" class="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition resize-none">{{ product.description }}</textarea>
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Ціна (грн)</label>
+                <input type="number" step="0.01" name="price" value="{{ product.price }}" class="w-full bg-black border border-gray-800 p-3 rounded-xl text-sm text-white focus:outline-none focus:border-purple-600 font-mono font-bold" required>
             </div>
             <div>
-                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Характеристики</label>
-                <textarea name="specs" rows="3" class="w-full bg-slate-950 border border-slate-800 text-slate-200 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-purple-500 transition resize-none">{{ product.specs }}</textarea>
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Складський залишок (шт)</label>
+                <input type="number" name="stock" value="{{ product.stock }}" class="w-full bg-black border border-gray-800 p-3 rounded-xl text-sm text-white focus:outline-none focus:border-purple-600 font-mono font-bold" required>
             </div>
+        </div>
 
-            <div class="flex items-center gap-3 pt-2">
-                <a href="{% url 'menu' %}" class="bg-slate-950 border border-slate-800 text-center py-3 px-4 rounded-xl text-sm font-bold text-slate-400 hover:text-white transition">Назад</a>
-                <button type="submit" class="flex-grow bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm py-3 rounded-xl transition">Зберегти зміни</button>
-                <a href="{% url 'delete_item' 'product' product.pk %}" onclick="return confirm('Видалити цей товар з бази?')" class="bg-red-950/40 border border-red-900/60 text-red-400 p-3 rounded-xl hover:bg-red-600 hover:text-white transition" title="Видалити"><i class="fa-solid fa-trash-can"></i></a>
-            </div>
-        </form>
-    </div>
+        <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Детальний опис</label>
+            <textarea name="description" rows="4" class="w-full bg-black border border-gray-800 p-3 rounded-xl text-sm text-white focus:outline-none focus:border-purple-600" required>{{ product.description }}</textarea>
+        </div>
 
-</body>
-</html>
+        <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Технічні специфікації</label>
+            <textarea name="specs" rows="3" class="w-full bg-black border border-gray-800 p-3 rounded-xl text-sm font-mono text-gray-300 focus:outline-none focus:border-purple-600" required>{{ product.specs }}</textarea>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-gray-800">
+            <a href="{% url 'menu' %}" class="bg-gray-800 hover:bg-gray-700 text-gray-300 px-5 py-2.5 rounded-xl text-xs font-bold transition">Скасувати</a>
+            <button type="submit" class="bg-purple-600 hover:bg-purple-500 text-white px-6 py-2.5 rounded-xl text-xs font-bold transition shadow-lg shadow-purple-950/40">Оновити дані</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

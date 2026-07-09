@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="max-w-md mx-auto bg-gray-900 border border-red-900 rounded-3xl p-8 text-center shadow-2xl my-12">
+    <i class="fa-solid fa-shield-halved text-6xl text-red-600 mb-4 animate-pulse"></i>
+    <h2 class="text-2xl font-black text-white mb-2">Доступ обмежено!</h2>
+    <p class="text-sm text-gray-400 leading-relaxed mb-6">Звичайні клієнти маркету не мають технічних прав змінювати конфігурацію, ціни товарів або переглядати статистику. Будь ласка, увійдіть під акаунтом адміністратора.</p>
+    <a href="{% url 'menu' %}" class="bg-gray-800 hover:bg-gray-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold border border-gray-700 transition">Повернутися на головну</a>
+</div>
+
+{% endblock %}

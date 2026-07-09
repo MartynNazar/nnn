@@ -1,60 +1,47 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <title>Журнал замовлень</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-8">
+{% extends 'base.html' %}
+{% block content %}
 
-    <div class="max-w-4xl mx-auto">
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-black text-white"><i class="fa-solid fa-receipt text-purple-500 mr-2"></i> Журнал замовлень клієнтів</h2>
-            <a href="{% url 'menu' %}" class="text-sm text-slate-400 hover:text-purple-400 transition"><i class="fa-solid fa-arrow-left mr-1"></i> Назад в магазин</a>
+<div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-xl">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h2 class="text-2xl font-black text-white uppercase tracking-tight"><i class="fa-solid fa-receipt text-yellow-500 mr-2"></i> Журнал замовлень</h2>
+            <p class="text-xs text-gray-500">Системний лог купівель, оформлених через кошики користувачів.</p>
         </div>
-
-        {% if orders %}
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm border-collapse">
-                        <thead>
-                            <tr class="bg-slate-950 border-b border-slate-800 text-xs font-bold uppercase text-slate-400">
-                                <th class="p-4">Клієнт</th>
-                                <th class="p-4">Товар</th>
-                                <th class="p-4 text-center">Кількість</th>
-                                <th class="p-4 text-center">Дата</th>
-                                <th class="p-4 text-center">Дія</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-950 text-slate-300">
-                            {% for order in orders %}
-                                <tr class="hover:bg-slate-800/30 transition">
-                                    <td class="p-4">
-                                        <div class="font-bold text-white">{{ order.customer.first_name }} {{ order.customer.last_name }}</div>
-                                        <div class="text-xs text-slate-500">{{ order.customer.email }}</div>
-                                    </td>
-                                    <td class="p-4">
-                                        <div class="font-medium text-slate-200">{{ order.product.name }}</div>
-                                        <span class="text-[10px] bg-slate-950 text-sky-400 font-bold px-2 py-0.5 rounded uppercase">{{ order.product.category }}</span>
-                                    </td>
-                                    <td class="p-4 text-center font-bold text-purple-400">{{ order.quantity }}</td>
-                                    <td class="p-4 text-center text-xs text-slate-400">{{ order.order_date|date:"d.m.Y H:i" }}</td>
-                                    <td class="p-4 text-center">
-                                        <a href="{% url 'delete_item' 'order' order.pk %}" onclick="return confirm('Видалити запис про це замовлення?')" class="text-slate-500 hover:text-red-400 p-2"><i class="fa-solid fa-trash-can text-xs"></i></a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        {% else %}
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center">
-                <p class="text-slate-500 text-sm">Історія замовлень порожня.</p>
-            </div>
-        {% endif %}
+        <a href="{% url 'clear_table' 'orders' %}" class="bg-red-950 text-red-400 hover:bg-red-950/80 border border-red-900/60 px-4 py-2 rounded-xl text-xs font-bold transition">Очистити журнал</a>
     </div>
 
-</body>
-</html>
+    <div class="overflow-x-auto rounded-xl border border-gray-800 bg-black/40">
+        <table class="w-full text-left border-collapse text-sm">
+            <thead>
+                <tr class="bg-black text-gray-400 uppercase text-[10px] tracking-wider border-b border-gray-800 font-bold">
+                    <th class="p-4">ID Замовлення</th>
+                    <th class="p-4">Покупець</th>
+                    <th class="p-4">Назва товару</th>
+                    <th class="p-4 text-center">Кількість</th>
+                    <th class="p-4 text-right">Загальна сума</th>
+                    <th class="p-4 text-center">Керування</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800/60">
+                {% for order in orders %}
+                <tr class="hover:bg-gray-900/40 transition-colors">
+                    <td class="p-4 font-mono text-gray-600">#{{ order.order_id }}</td>
+                    <td class="p-4 font-bold text-white">{{ order.customer.last_name }} {{ order.customer.first_name }}</td>
+                    <td class="p-4 text-gray-300 font-medium">{{ order.product.name }}</td>
+                    <td class="p-4 text-center font-mono text-gray-400">{{ order.quantity }} шт.</td>
+                    <td class="p-4 text-right font-black text-purple-400 font-mono">{{ order.total_price }} грн</td>
+                    <td class="p-4 text-center">
+                        <a href="{% url 'delete_item' 'order' order.order_id %}" class="text-red-400 hover:text-red-500 text-xs"><i class="fa-solid fa-rectangle-xmark"></i> Скасувати</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="p-8 text-center text-gray-600 font-bold">Журнал замовлень порожній. Купівель ще не було.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
