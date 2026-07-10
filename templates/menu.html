@@ -3,219 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Shop — Головна</title>
+    <title>CyberShop — Меню товарів</title>
     <style>
-        /* Загальні кіберпанк-настройки */
+        /* Базові налаштування стилю */
         body {
-            background-color: #0a0b10;
-            color: #e2e8f0;
-            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: #0d0e15;
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 0;
         }
 
+        /* Верхня панель (Хедер) */
         header {
+            background: #181a26;
+            padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 30px;
-            background: #121420;
-            border-radius: 12px;
-            border: 1px solid #1f2335;
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.1);
-            margin-bottom: 30px;
+            border-bottom: 2px solid #25283d;
+            box-shadow: 0 4px 20px rgba(0, 242, 254, 0.1);
         }
 
-        h1 {
-            color: #00f2fe;
-            text-shadow: 0 0 10px rgba(0, 242, 254, 0.6);
-            margin: 0;
+        .logo {
             font-size: 24px;
+            font-weight: bold;
+            color: #00f2fe;
+            text-shadow: 0 0 10px #00f2fe;
+            text-decoration: none;
         }
 
-        .user-info {
+        .user-panel {
             display: flex;
             align-items: center;
             gap: 15px;
         }
 
-        .status-badge {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
+        .username-display {
+            font-weight: 500;
+            color: #e0e0e0;
         }
 
-        .status-admin {
-            background: rgba(255, 0, 127, 0.1);
+        .admin-badge {
+            background: rgba(255, 0, 127, 0.2);
             color: #ff007f;
             border: 1px solid #ff007f;
-            box-shadow: 0 0 10px rgba(255, 0, 127, 0.3);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-shadow: 0 0 5px #ff007f;
         }
 
-        .status-client {
-            background: rgba(0, 242, 254, 0.1);
-            color: #00f2fe;
-            border: 1px solid #00f2fe;
-            box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+        .btn-auth {
+            background: #00f2fe;
+            color: #0d0e15;
+            padding: 8px 18px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 0 10px #00f2fe;
+            transition: 0.3s ease;
         }
 
-        /* Кнопки виходу / дій */
-        .logout-btn {
-            color: #aaa;
+        .btn-auth:hover {
+            box-shadow: 0 0 20px #00f2fe;
+            transform: scale(1.05);
+        }
+
+        .btn-logout {
+            background: transparent;
+            border: 1px solid #ff007f;
+            color: #ff007f;
+            padding: 6px 15px;
+            border-radius: 20px;
             text-decoration: none;
             font-size: 14px;
-            transition: color 0.3s;
-        }
-        .logout-btn:hover {
-            color: #ff007f;
-            text-shadow: 0 0 8px #ff007f;
+            transition: 0.3s;
         }
 
-        /* Контейнер для товарів та кошика */
-        .main-layout {
-            display: grid;
-            grid-template-columns: 1fr 350px;
+        .btn-logout:hover {
+            background: rgba(255, 0, 127, 0.1);
+            box-shadow: 0 0 10px #ff007f;
+        }
+
+        /* Головний контейнер (Сітка: Товари + Кошик) */
+        .main-container {
+            display: flex;
+            padding: 30px;
             gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
-        @media (max-width: 900px) {
-            .main-layout {
-                grid-template-columns: 1fr;
-            }
+        /* Секція товарів */
+        .products-section {
+            flex: 3;
         }
 
-        /* Картки товарів */
+        .section-title {
+            font-size: 22px;
+            margin-bottom: 20px;
+            color: #fff;
+            border-left: 4px solid #00f2fe;
+            padding-left: 10px;
+        }
+
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 20px;
         }
 
+        /* Картка товару */
         .product-card {
-            background: #141625;
-            border: 1px solid #222538;
-            border-radius: 12px;
+            background: #181a26;
+            border-radius: 10px;
             padding: 20px;
+            border: 1px solid #25283d;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            transition: all 0.3s ease-in-out;
+            transition: transform 0.3s, border-color 0.3s;
         }
 
-        /* НЕОНОВА ПІДСВІТКА КАРТКИ ПРИ НАВЕДЕННІ */
         .product-card:hover {
             transform: translateY(-5px);
             border-color: #00f2fe;
-            box-shadow: 0 0 20px rgba(0, 242, 254, 0.4), inset 0 0 8px rgba(0, 242, 254, 0.1);
+            box-shadow: 0 5px 15px rgba(0, 242, 254, 0.1);
         }
 
-        /* Якщо це адмін, підсвітка карток може змінюватися на рожеву */
-        body.admin-mode .product-card:hover {
-            border-color: #ff007f;
-            box-shadow: 0 0 20px rgba(255, 0, 127, 0.4), inset 0 0 8px rgba(255, 0, 127, 0.1);
+        .product-img {
+            width: 100%;
+            height: 160px;
+            background: #25283d;
+            border-radius: 6px;
+            object-fit: cover;
+            margin-bottom: 15px;
         }
 
-        .product-card h3 {
-            margin: 0 0 10px 0;
+        .product-name {
             font-size: 18px;
+            margin: 0 0 10px 0;
+            color: #fff;
         }
 
-        .category {
-            font-size: 12px;
-            color: #8a8fbc;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
+        .product-desc {
+            font-size: 14px;
+            color: #aaa;
+            margin: 0 0 15px 0;
+            line-height: 1.4;
         }
 
-        .price {
+        .product-price {
             font-size: 20px;
             font-weight: bold;
-            color: #fff;
-            margin: 15px 0;
-        }
-
-        /* НЕОНОВІ КНОПКИ */
-        .neon-btn {
-            background: transparent;
-            padding: 10px 15px;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            transition: all 0.3s ease;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        /* Блакитний неон (для клієнтів) */
-        .btn-client {
             color: #00f2fe;
-            border: 2px solid #00f2fe;
-        }
-        .btn-client:hover {
-            color: #0a0b10;
-            background: #00f2fe;
-            box-shadow: 0 0 15px #00f2fe, 0 0 30px #00f2fe;
+            margin-bottom: 15px;
         }
 
-        /* Рожевий неон (для адмінів) */
-        .btn-admin {
-            color: #ff007f;
-            border: 2px solid #ff007f;
-            background: transparent;
-        }
-        .btn-admin:hover {
-            color: #fff;
+        .btn-add-cart {
+            width: 100%;
             background: #ff007f;
-            box-shadow: 0 0 15px #ff007f, 0 0 30px #ff007f;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
         }
 
-        /* Форма редагування ціни для Адміна */
-        .admin-edit-form {
+        .btn-add-cart:hover {
+            box-shadow: 0 0 15px #ff007f;
+        }
+
+        /* Форма зміни ціни для Адміна */
+        .admin-actions {
             margin-top: 15px;
             padding-top: 15px;
-            border-top: 1px dashed #222538;
+            border-top: 1px dashed #444;
         }
 
-        .admin-edit-form label {
-            font-size: 12px;
-            color: #ff007f;
-            display: block;
-            margin-bottom: 5px;
+        .admin-form {
+            display: flex;
+            gap: 8px;
         }
 
-        .admin-edit-form input[type="number"] {
-            width: 100%;
-            padding: 8px;
-            background: #1f2235;
-            border: 1px solid #ff007f;
+        .admin-input {
+            width: 80px;
+            padding: 6px;
+            background: #25283d;
+            border: 1px solid #555;
             border-radius: 4px;
             color: #fff;
-            margin-bottom: 10px;
-            box-sizing: border-box;
         }
 
-        /* Панель унікального кошика */
-        .cart-panel {
-            background: #121420;
-            border: 1px solid #1f2335;
-            border-radius: 12px;
+        .btn-update {
+            background: #00f2fe;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            color: #0d0e15;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Бічна панель кошика */
+        .cart-section {
+            flex: 1;
+            background: #181a26;
+            border-radius: 10px;
             padding: 20px;
+            border: 1px solid #25283d;
             height: fit-content;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-        }
-
-        .cart-panel h2 {
-            margin-top: 0;
-            color: #00f2fe;
-            font-size: 20px;
-            border-bottom: 1px solid #1f2335;
-            padding-bottom: 10px;
+            position: sticky;
+            top: 30px;
         }
 
         .cart-item {
@@ -223,92 +226,95 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px 0;
-            border-bottom: 1px solid #1b1d2a;
+            border-bottom: 1px solid #25283d;
             font-size: 14px;
         }
 
-        .cart-item-name {
-            font-weight: 500;
-        }
-
-        .cart-item-qty {
-            color: #00f2fe;
-            background: rgba(0, 242, 254, 0.1);
-            padding: 2px 8px;
-            border-radius: 4px;
-        }
-
         .cart-empty {
-            color: #626784;
+            color: #888;
             text-align: center;
             padding: 20px 0;
-            font-style: italic;
         }
     </style>
 </head>
-<body class="{% if is_admin %}admin-mode{% endif %}">
+<body>
 
     <header>
-        <h1>NEON MATRIX SHOP</h1>
-        <div class="user-info">
-            <span>Вітаємо, <strong>{{ username }}</strong>!</span>
-            
-            {% if is_admin %}
-                <span class="status-badge status-admin">Режим: Адмін</span>
+        <a href="/" class="logo">⚡ CYBERSHOP</a>
+
+        <div class="user-panel">
+            {% if username %}
+                <span class="username-display">Користувач: <strong>{{ username }}</strong></span>
+                {% if is_admin %}
+                    <span class="admin-badge">ADMIN</span>
+                {% endif %}
+                <a href="/admin/" class="btn-logout" style="border-color: #00f2fe; color: #00f2fe; margin-right: 10px;">Панель Django</a>
+                <a href="/login/" class="btn-logout">Вийти</a>
             {% else %}
-                <span class="status-badge status-client">Режим: Клієнт</span>
+                <a href="{% url 'login' %}" class="btn-auth">УВІЙТИ В АКАУНТ</a>
             {% endif %}
-            
-            <a href="/accounts/logout/" class="logout-btn">Вийти</a>
         </div>
     </header>
 
-    <div class="main-layout">
-        
-        <div class="products-grid">
-            {% for product in products %}
-                <div class="product-card">
-                    <div>
-                        <div class="category">{{ product.category }}</div>
-                        <h3>{{ product.name }}</h3>
-                        <div class="price">{{ product.price }} грн.</div>
-                    </div>
+    <div class="main-container">
 
-                    {% if is_admin %}
-                        <div class="admin-edit-form">
-                            <form action="/update-price/{{ product.product_id }}/" method="POST">
-                                {% csrf_token %}
-                                <label>Змінити ціну в БД (грн):</label>
-                                <input type="number" name="price" value="{{ product.price }}" step="0.01" required>
-                                <button type="submit" class="neon-btn btn-admin">ОНОВИТИ В БД</button>
-                            </form>
+        <div class="products-section">
+            <h2 class="section-title">Асортимент товарів</h2>
+
+            <div class="products-grid">
+                {% for product in products %}
+                    <div class="product-card">
+                        <div>
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-img">
+                            {% else %}
+                                <div class="product-img" style="display: flex; align-items: center; justify-content: center; color: #555;">Немає фото</div>
+                            {% endif %}
+                            <h3 class="product-name">{{ product.name }}</h3>
+                            <p class="product-desc">{{ product.description|default:"Опис відсутній." }}</p>
                         </div>
-                    {% else %}
-                        <a href="/add-to-cart/{{ product.product_id }}/" class="neon-btn btn-client">
-                            ДОДАТИ В КОШИК
-                        </a>
-                    {% endif %}
-                </div>
-            {% empty %}
-                <p>Товарів не знайдено в базі даних.</p>
-            {% endfor %}
+
+                        <div>
+                            <div class="product-price">{{ product.price }} грн</div>
+
+                            <form method="POST" action="{% url 'add_to_cart' product.product_id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-add-cart">У кошик 🛒</button>
+                            </form>
+
+                            {% if is_admin %}
+                                <div class="admin-actions">
+                                    <form method="POST" action="{% url 'update_price' product.product_id %}" class="admin-form">
+                                        {% csrf_token %}
+                                        <input type="number" step="0.01" name="price" class="admin-input" value="{{ product.price }}" required>
+                                        <button type="submit" class="btn-update">Змінити ціну</button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <p style="color: #888;">Наразі немає доданих товарів.</p>
+                {% endfor %}
+            </div>
         </div>
 
-        <div class="cart-panel">
-            <h2>🛒 Мій унікальний кошик</h2>
-            {% if is_admin %}
-                <p style="color: #ff007f; font-size: 13px;">Ви увійшли як Адміністратор. Кошик доступний лише для акаунтів клієнтів.</p>
-            {% else %}
-                <div id="cart-items-container">
+        <div class="cart-section">
+            <h2 class="section-title" style="border-left-color: #ff007f;">Твій Кошик</h2>
+            {% if username %}
+                {% if cart_items %}
                     {% for item in cart_items %}
                         <div class="cart-item">
-                            <span class="cart-item-name">{{ item.product.name }}</span>
-                            <span class="cart-item-qty">x{{ item.quantity }}</span>
+                            <span>{{ item.product.name }} (x{{ item.quantity }})</span>
+                            <span style="color: #00f2fe; font-weight: bold;">{{ item.product.price }} грн</span>
                         </div>
-                    {% empty %}
-                        <div class="cart-empty">Кошик порожній. Час щось купити!</div>
                     {% endfor %}
-                </div>
+                    <button class="btn-add-cart" style="margin-top: 20px; background: #00f2fe; color: #0d0e15;">Оформити замовлення</button>
+                {% else %}
+                    <p class="cart-empty">Кошик порожній.</p>
+                {% endif %}
+            {% else %}
+                <p class="cart-empty" style="color: #ff007f;">Увійдіть в акаунт, щоб користуватися кошиком.</p>
             {% endif %}
         </div>
 

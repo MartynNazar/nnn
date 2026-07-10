@@ -2,161 +2,106 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Вхід в систему</title>
+    <title>Авторизація та Реєстрація</title>
     <style>
-        body {
-            background-color: #0d0e15;
-            color: #fff;
-            font-family: 'Segoe UI', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .login-container {
-            background: #181a26;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
-            text-align: center;
-            width: 350px;
-        }
-        h2 { margin-bottom: 25px; color: #00f2fe; text-shadow: 0 0 10px #00f2fe; }
-        
-        /* Робимо гарний вибір ролі */
-        .role-selector {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
-        }
-        .role-btn {
-            background: transparent;
-            border: 2px solid #555;
-            color: #aaa;
-            padding: 8px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        /* НЕОНОВЕ ПІДСВІЧУВАННЯ ПРИ НАВЕДЕННІ */
-        .role-btn:hover, .role-btn.active {
-            color: #fff;
-            border-color: #00f2fe;
-            background: rgba(0, 242, 254, 0.1);
-            box-shadow: 0 0 15px #00f2fe, inset 0 0 5px #00f2fe;
-        }
-        
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            background: #25283d;
-            border: 1px solid #444;
-            border-radius: 6px;
-            color: white;
-            box-sizing: border-box;
-        }
-        
-        .submit-btn {
-            width: 100%;
-            padding: 12px;
-            background: #00f2fe;
-            border: none;
-            border-radius: 6px;
-            color: #0d0e15;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        /* Неонова кнопка увійти */
-        .submit-btn:hover {
-            box-shadow: 0 0 25px #00f2fe;
-            transform: scale(1.02);
-        }
-        .reg-link {
-            display: block;
-            margin-top: 15px;
-            color: #ff007f;
-            text-decoration: none;
-            transition: all 0.3s;
-        }
-        .reg-link:hover {
-            text-shadow: 0 0 10px #ff007f;
-        }
+        body { background-color: #0d0e15; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .auth-container { background: #181a26; padding: 30px; border-radius: 12px; box-shadow: 0 0 15px rgba(0, 242, 254, 0.2); width: 360px; text-align: center; }
+
+        .tab-selector { display: flex; justify-content: space-around; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .tab-btn { background: transparent; border: none; color: #888; font-size: 16px; cursor: pointer; padding: 5px 10px; transition: all 0.3s; }
+        .tab-btn.active { color: #00f2fe; border-bottom: 2px solid #00f2fe; text-shadow: 0 0 10px #00f2fe; }
+
+        .role-selector { display: flex; justify-content: space-around; margin-bottom: 15px; }
+        .role-btn { background: transparent; border: 1px solid #444; color: #aaa; padding: 5px 12px; border-radius: 15px; cursor: pointer; }
+        .role-btn.active { border-color: #ff007f; color: #fff; background: rgba(255, 0, 127, 0.1); box-shadow: 0 0 10px #ff007f; }
+
+        input { width: 100%; padding: 10px; margin: 8px 0; background: #25283d; border: 1px solid #444; border-radius: 6px; color: white; box-sizing: border-box; }
+        .submit-btn { width: 100%; padding: 12px; background: #00f2fe; border: none; border-radius: 6px; color: #0d0e15; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        .submit-btn:hover { box-shadow: 0 0 15px #00f2fe; }
+        .msg { color: #ff007f; font-size: 14px; margin: 10px 0; }
     </style>
 </head>
 <body>
 
-<div class="login-container">
-    <h2 id="login-title">Вхід Клієнта</h2>
-    
-    <div class="role-selector">
-        <button class="role-btn active" onclick="setRole('client')">Клієнт</button>
-        <button class="role-btn" onclick="setRole('admin')">Адмін</button>
+<div class="auth-container">
+    <div class="tab-selector">
+        <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">ВХІД</button>
+        <button class="tab-btn" id="tab-register" onclick="switchTab('register')">РЕЄСТРАЦІЯ</button>
     </div>
 
-    <form method="POST" action="{% url 'login' %}">
-        {% csrf_block %}
-        <div style="position: relative;">
-            <input type="text" name="username" id="username" placeholder="Логін" autocomplete="off" oninput="fetchSuggestions(this.value)">
-            <div id="suggestions-box" style="position: absolute; background: #25283d; width: 100%; border-radius: 0 0 6px 6px; z-index: 10; text-align: left; max-height: 150px; overflow-y: auto;"></div>
+    {% if messages %}
+        {% for message in messages %}
+            <p class="msg">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST" id="form-login">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="login">
+        <input type="hidden" name="role" id="user-role" value="client">
+
+        <div class="role-selector">
+            <button type="button" class="role-btn active" id="role-client" onclick="setRole('client')">Клієнт</button>
+            <button type="button" class="role-btn" id="role-admin" onclick="setRole('admin')">Адмін</button>
         </div>
-        
-        <input type="password" name="password" placeholder="Пароль">
+
+        <input type="text" name="username" id="login-user" placeholder="Введіть ваш Email" required>
+        <input type="password" name="password" id="login-pass" placeholder="Введіть Ім'я та Прізвище" required>
         <button type="submit" class="submit-btn">УВІЙТИ</button>
     </form>
-    
-    <a href="/register/" class="reg-link" id="reg-link">Ще немає акаунту? Реєстрація</a>
+
+    <form method="POST" id="form-register" style="display: none;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="register">
+
+        <input type="text" name="first_name" placeholder="Ім'я" required>
+        <input type="text" name="last_name" placeholder="Прізвище" required>
+        <input type="email" name="email" placeholder="Електронна пошта (Email)" required>
+        <input type="text" name="phone" placeholder="Телефон">
+        <input type="text" name="address" placeholder="Адреса доставки">
+        <button type="submit" class="submit-btn" style="background: #ff007f; color: #fff;">ЗАРЕЄСТРУВАТИСЯ</button>
+    </form>
 </div>
 
 <script>
-    // Скрипт зміни інтерфейсу Клієнт / Адмін
-    function setRole(role) {
-        const title = document.getElementById('login-title');
-        const regLink = document.getElementById('reg-link');
-        const buttons = document.querySelectorAll('.role-btn');
-        
-        buttons.forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
-
-        if(role === 'admin') {
-            title.innerText = 'Вхід Адміна';
-            title.style.color = '#ff007f';
-            title.style.textShadow = '0 0 10px #ff007f';
-            regLink.style.display = 'none'; // Адміни не реєструються самі
-        } else {
-            title.innerText = 'Вхід Клієнта';
-            title.style.color = '#00f2fe';
-            title.style.textShadow = '0 0 10px #00f2fe';
-            regLink.style.display = 'block';
-        }
+function switchTab(tab) {
+    if (tab === 'login') {
+        document.getElementById('form-login').style.display = 'block';
+        document.getElementById('form-register').style.style.display = 'none';
+        document.getElementById('tab-login').classList.add('active');
+        document.getElementById('tab-register').classList.remove('active');
+    } else {
+        document.getElementById('form-login').style.display = 'none';
+        document.getElementById('form-register').style.display = 'block';
+        document.getElementById('tab-login').classList.remove('active');
+        document.getElementById('tab-register').classList.add('active');
     }
+}
 
-    // Скрипт Автопідстановки (Починаєш писати — підтягує клієнтів)
-    function fetchSuggestions(val) {
-        const box = document.getElementById('suggestions-box');
-        if (val.length < 1) { box.innerHTML = ''; return; }
-        
-        fetch(`/api/suggest-customers/?q=${val}`)
-            .then(res => res.json())
-            .then(data => {
-                box.innerHTML = '';
-                data.forEach(user => {
-                    let div = document.createElement('div');
-                    div.style.padding = '10px';
-                    div.style.cursor = 'pointer';
-                    div.style.borderBottom = '1px solid #333';
-                    div.innerText = user.username;
-                    // При кліці — автозаповнення
-                    div.onclick = function() {
-                        document.getElementById('username').value = user.username;
-                        box.innerHTML = '';
-                    };
-                    box.appendChild(div);
-                });
-            });
+function setRole(role) {
+    document.getElementById('user-role').value = role;
+    const userInput = document.getElementById('login-user');
+    const passInput = document.getElementById('login-pass');
+
+    document.getElementById('role-client').classList.remove('active');
+    document.getElementById('role-admin').classList.remove('active');
+
+    if (role === 'admin') {
+        document.getElementById('role-admin').classList.add('active');
+        userInput.placeholder = "Логін адміна (admin)";
+        passInput.placeholder = "Пароль адміна (2011)";
+    } else {
+        document.getElementById('role-client').classList.add('active');
+        userInput.placeholder = "Введіть ваш Email";
+        passInput.placeholder = "Введіть Ім'я та Прізвище";
     }
+}
+
+// Підтримка активної вкладки після перезавантаження через помилку помилки
+{% if active_tab == 'register' %}
+    switchTab('register');
+{% endif %}
 </script>
+
 </body>
 </html>
