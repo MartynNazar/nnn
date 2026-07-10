@@ -1,118 +1,318 @@
-{% extends 'base.html' %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Shop — Головна</title>
+    <style>
+        /* Загальні кіберпанк-настройки */
+        body {
+            background-color: #0a0b10;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
 
-{% if request.session.is_admin %}
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    <div class="bg-gray-900 border border-purple-900/40 p-5 rounded-2xl shadow-md">
-        <div class="text-xs font-bold uppercase tracking-wider text-gray-500">Загальний виторг</div>
-        <div class="text-3xl font-black text-white mt-1">{{ total_sales }} грн</div>
-    </div>
-    <div class="bg-gray-900 border border-purple-900/40 p-5 rounded-2xl shadow-md">
-        <div class="text-xs font-bold uppercase tracking-wider text-gray-500">Середній чек</div>
-        <div class="text-3xl font-black text-white mt-1">{{ avg_check }} грн</div>
-    </div>
-    <div class="bg-gray-900 border border-yellow-600/30 p-5 rounded-2xl shadow-md">
-        <div class="text-xs font-bold uppercase tracking-wider text-gray-500">Популярна категорія</div>
-        <div class="text-3xl font-black text-yellow-400 mt-1">
-            {% if popular_cat %}{{ popular_cat.product__category|upper }}{% else %}Нічого{% endif %}
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background: #121420;
+            border-radius: 12px;
+            border: 1px solid #1f2335;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.1);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #00f2fe;
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.6);
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-admin {
+            background: rgba(255, 0, 127, 0.1);
+            color: #ff007f;
+            border: 1px solid #ff007f;
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.3);
+        }
+
+        .status-client {
+            background: rgba(0, 242, 254, 0.1);
+            color: #00f2fe;
+            border: 1px solid #00f2fe;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+        }
+
+        /* Кнопки виходу / дій */
+        .logout-btn {
+            color: #aaa;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+        .logout-btn:hover {
+            color: #ff007f;
+            text-shadow: 0 0 8px #ff007f;
+        }
+
+        /* Контейнер для товарів та кошика */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Картки товарів */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: #141625;
+            border: 1px solid #222538;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* НЕОНОВА ПІДСВІТКА КАРТКИ ПРИ НАВЕДЕННІ */
+        .product-card:hover {
+            transform: translateY(-5px);
+            border-color: #00f2fe;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.4), inset 0 0 8px rgba(0, 242, 254, 0.1);
+        }
+
+        /* Якщо це адмін, підсвітка карток може змінюватися на рожеву */
+        body.admin-mode .product-card:hover {
+            border-color: #ff007f;
+            box-shadow: 0 0 20px rgba(255, 0, 127, 0.4), inset 0 0 8px rgba(255, 0, 127, 0.1);
+        }
+
+        .product-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+
+        .category {
+            font-size: 12px;
+            color: #8a8fbc;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .price {
+            font-size: 20px;
+            font-weight: bold;
+            color: #fff;
+            margin: 15px 0;
+        }
+
+        /* НЕОНОВІ КНОПКИ */
+        .neon-btn {
+            background: transparent;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Блакитний неон (для клієнтів) */
+        .btn-client {
+            color: #00f2fe;
+            border: 2px solid #00f2fe;
+        }
+        .btn-client:hover {
+            color: #0a0b10;
+            background: #00f2fe;
+            box-shadow: 0 0 15px #00f2fe, 0 0 30px #00f2fe;
+        }
+
+        /* Рожевий неон (для адмінів) */
+        .btn-admin {
+            color: #ff007f;
+            border: 2px solid #ff007f;
+            background: transparent;
+        }
+        .btn-admin:hover {
+            color: #fff;
+            background: #ff007f;
+            box-shadow: 0 0 15px #ff007f, 0 0 30px #ff007f;
+        }
+
+        /* Форма редагування ціни для Адміна */
+        .admin-edit-form {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #222538;
+        }
+
+        .admin-edit-form label {
+            font-size: 12px;
+            color: #ff007f;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .admin-edit-form input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            background: #1f2235;
+            border: 1px solid #ff007f;
+            border-radius: 4px;
+            color: #fff;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        /* Панель унікального кошика */
+        .cart-panel {
+            background: #121420;
+            border: 1px solid #1f2335;
+            border-radius: 12px;
+            padding: 20px;
+            height: fit-content;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .cart-panel h2 {
+            margin-top: 0;
+            color: #00f2fe;
+            font-size: 20px;
+            border-bottom: 1px solid #1f2335;
+            padding-bottom: 10px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #1b1d2a;
+            font-size: 14px;
+        }
+
+        .cart-item-name {
+            font-weight: 500;
+        }
+
+        .cart-item-qty {
+            color: #00f2fe;
+            background: rgba(0, 242, 254, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .cart-empty {
+            color: #626784;
+            text-align: center;
+            padding: 20px 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body class="{% if is_admin %}admin-mode{% endif %}">
+
+    <header>
+        <h1>NEON MATRIX SHOP</h1>
+        <div class="user-info">
+            <span>Вітаємо, <strong>{{ username }}</strong>!</span>
+            
+            {% if is_admin %}
+                <span class="status-badge status-admin">Режим: Адмін</span>
+            {% else %}
+                <span class="status-badge status-client">Режим: Клієнт</span>
+            {% endif %}
+            
+            <a href="/accounts/logout/" class="logout-btn">Вийти</a>
         </div>
-    </div>
-</div>
+    </header>
 
-<div class="bg-gray-900 p-4 rounded-2xl border border-gray-800 mb-8 flex flex-wrap gap-4 items-center justify-between">
-    <div class="flex gap-2">
-        <a href="{% url 'add_product' %}" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition"><i class="fa-solid fa-plus mr-1"></i> Додати товар</a>
-        <a href="{% url 'clear_table' 'products' %}" class="bg-red-700/60 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition">Очистити каталог</a>
-    </div>
-    <div class="flex gap-4">
-        <form action="{% url 'update_prices' %}" method="POST" class="flex gap-2 items-center">
-            {% csrf_token %}
-            <input type="number" name="percentage" placeholder="%" class="w-14 bg-black border border-gray-700 p-1.5 rounded text-xs text-center text-white" required>
-            <button type="submit" class="bg-gray-800 hover:bg-purple-900/40 text-purple-400 px-3 py-1.5 rounded text-xs font-bold border border-purple-900/60 transition">Підвищити ціни</button>
-        </form>
-        <form action="{% url 'decrease_prices' %}" method="POST" class="flex gap-2 items-center">
-            {% csrf_token %}
-            <input type="number" name="percentage" placeholder="%" class="w-14 bg-black border border-gray-700 p-1.5 rounded text-xs text-center text-white" required>
-            <button type="submit" class="bg-gray-800 hover:bg-red-900/40 text-red-400 px-3 py-1.5 rounded text-xs font-bold border border-red-900/60 transition">Знизити ціни</button>
-        </form>
-    </div>
-</div>
-{% endif %}
-
-<div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-    <div class="lg:col-span-1">
-        <div class="bg-gray-900 p-4 rounded-2xl border border-gray-800 sticky top-24 shadow-sm">
-            <h3 class="text-white font-black uppercase text-sm tracking-widest mb-4 flex items-center">
-                <i class="fa-solid fa-layer-group text-purple-500 mr-2"></i>Категорії
-            </h3>
-            <div class="space-y-1 max-h-[60vh] overflow-y-auto pr-2">
-                <a href="{% url 'menu' %}" class="block px-3 py-2 rounded-xl text-sm font-bold transition {% if not selected_category %} bg-purple-600 text-white {% else %} text-gray-400 hover:bg-gray-800 hover:text-white {% endif %}">
-                    Всі товари
-                </a>
-                {% for cat in categories %}
-                <a href="?category={{ cat.category }}" class="flex justify-between items-center px-3 py-2 rounded-xl text-sm font-bold transition {% if selected_category == cat.category %} bg-purple-600 text-white {% else %} text-gray-400 hover:bg-gray-800 hover:text-white {% endif %}">
-                    <span class="capitalize">{{ cat.category }}</span>
-                    <span class="text-xs px-2 py-0.5 rounded-full bg-black/40 text-gray-500 border border-gray-800/60">{{ cat.count }}</span>
-                </a>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-
-    <div class="lg:col-span-3">
-        {% if not products %}
-            <div class="bg-gray-900 border border-gray-800 rounded-3xl p-12 text-center text-gray-500">
-                <i class="fa-solid fa-box-open text-5xl mb-4 text-gray-700"></i>
-                <p class="text-lg font-bold">Наразі немає товарів у цій категорії.</p>
-            </div>
-        {% else %}
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {% for product in products %}
-                <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-md flex flex-col group hover:border-purple-600/30 transition-all duration-300">
-                    
-                    <div class="h-48 bg-black flex items-center justify-center border-b border-gray-800 relative text-gray-700 group-hover:text-purple-500 transition-colors">
-                        <i class="fa-solid fa-laptop-code text-5xl"></i>
-                        <span class="absolute bottom-2 right-2 bg-gray-900 text-[10px] text-gray-500 px-2 py-0.5 rounded border border-gray-800 font-mono">ID: {{ product.product_id }}</span>
+    <div class="main-layout">
+        
+        <div class="products-grid">
+            {% for product in products %}
+                <div class="product-card">
+                    <div>
+                        <div class="category">{{ product.category }}</div>
+                        <h3>{{ product.name }}</h3>
+                        <div class="price">{{ product.price }} грн.</div>
                     </div>
 
-                    <div class="p-5 flex-grow flex flex-col justify-between">
-                        <div>
-                            <span class="text-[10px] bg-gray-950 text-purple-400 font-extrabold uppercase px-2.5 py-1 rounded-md border border-purple-900/40 inline-block mb-2 capitalize">{{ product.category }}</span>
-                            <h4 class="text-lg font-bold text-white tracking-tight group-hover:text-purple-400 transition-colors mb-1">{{ product.name }}</h4>
-                            <p class="text-xs text-gray-400 line-clamp-2 mb-4">{{ product.description|default:"Опис очікується розробником." }}</p>
+                    {% if is_admin %}
+                        <div class="admin-edit-form">
+                            <form action="/update-price/{{ product.product_id }}/" method="POST">
+                                {% csrf_token %}
+                                <label>Змінити ціну в БД (грн):</label>
+                                <input type="number" name="price" value="{{ product.price }}" step="0.01" required>
+                                <button type="submit" class="neon-btn btn-admin">ОНОВИТИ В БД</button>
+                            </form>
                         </div>
-
-                        <div>
-                            <div class="flex justify-between items-baseline mb-4 bg-black/40 p-2.5 rounded-xl border border-gray-800/50">
-                                <span class="text-xs text-gray-500 font-bold">Ціна:</span>
-                                <span class="text-xl font-black text-white">{{ product.price }} <span class="text-xs text-purple-400">грн</span></span>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-2">
-                                <a href="{% url 'product_detail' product.product_id %}" class="bg-gray-800 hover:bg-gray-700 text-white text-center py-2 rounded-xl text-xs font-bold transition border border-gray-700/60">Детальніше</a>
-                                
-                                {% if product.stock > 0 %}
-                                    <a href="{% url 'cart_add' product.product_id %}" class="bg-purple-600 hover:bg-purple-500 text-white text-center py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-lg shadow-purple-950/20">
-                                        <i class="fa-solid fa-cart-plus text-[11px]"></i> Купити
-                                    </a>
-                                {% else %}
-                                    <span class="bg-gray-950 text-red-500 border border-red-950 text-center py-2 rounded-xl text-xs font-bold block cursor-not-allowed">Немає</span>
-                                {% endif %}
-                            </div>
-
-                            {% if request.session.is_admin %}
-                            <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-gray-800/60">
-                                <a href="{% url 'edit_product' product.product_id %}" class="text-center text-[10px] text-gray-400 bg-gray-950 border border-gray-800 hover:text-white py-1 rounded transition">Редагувати</a>
-                                <a href="{% url 'delete_item' 'product' product.product_id %}" class="text-center text-[10px] text-red-400 bg-gray-950 border border-gray-800 hover:bg-red-950/40 py-1 rounded transition">Видалити</a>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
+                    {% else %}
+                        <a href="/add-to-cart/{{ product.product_id }}/" class="neon-btn btn-client">
+                            ДОДАТИ В КОШИК
+                        </a>
+                    {% endif %}
                 </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    </div>
-</div>
+            {% empty %}
+                <p>Товарів не знайдено в базі даних.</p>
+            {% endfor %}
+        </div>
 
-{% endblock %}
+        <div class="cart-panel">
+            <h2>🛒 Мій унікальний кошик</h2>
+            {% if is_admin %}
+                <p style="color: #ff007f; font-size: 13px;">Ви увійшли як Адміністратор. Кошик доступний лише для акаунтів клієнтів.</p>
+            {% else %}
+                <div id="cart-items-container">
+                    {% for item in cart_items %}
+                        <div class="cart-item">
+                            <span class="cart-item-name">{{ item.product.name }}</span>
+                            <span class="cart-item-qty">x{{ item.quantity }}</span>
+                        </div>
+                    {% empty %}
+                        <div class="cart-empty">Кошик порожній. Час щось купити!</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -1,28 +1,162 @@
-{% extends 'base.html' %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Вхід в систему</title>
+    <style>
+        body {
+            background-color: #0d0e15;
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-container {
+            background: #181a26;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
+            text-align: center;
+            width: 350px;
+        }
+        h2 { margin-bottom: 25px; color: #00f2fe; text-shadow: 0 0 10px #00f2fe; }
+        
+        /* Робимо гарний вибір ролі */
+        .role-selector {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        .role-btn {
+            background: transparent;
+            border: 2px solid #555;
+            color: #aaa;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        /* НЕОНОВЕ ПІДСВІЧУВАННЯ ПРИ НАВЕДЕННІ */
+        .role-btn:hover, .role-btn.active {
+            color: #fff;
+            border-color: #00f2fe;
+            background: rgba(0, 242, 254, 0.1);
+            box-shadow: 0 0 15px #00f2fe, inset 0 0 5px #00f2fe;
+        }
+        
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: #25283d;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: white;
+            box-sizing: border-box;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: #00f2fe;
+            border: none;
+            border-radius: 6px;
+            color: #0d0e15;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        /* Неонова кнопка увійти */
+        .submit-btn:hover {
+            box-shadow: 0 0 25px #00f2fe;
+            transform: scale(1.02);
+        }
+        .reg-link {
+            display: block;
+            margin-top: 15px;
+            color: #ff007f;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .reg-link:hover {
+            text-shadow: 0 0 10px #ff007f;
+        }
+    </style>
+</head>
+<body>
 
-<div class="max-w-md mx-auto bg-gray-900 border border-gray-800 rounded-3xl p-6 md:p-8 shadow-2xl">
-    <div class="text-center mb-6">
-        <h2 class="text-2xl font-black text-white"><i class="fa-solid fa-user-tag text-purple-500 mr-2"></i>Вхід для покупців</h2>
-        <p class="text-xs text-gray-500 mt-1">Введіть ваші дані для доступу до персонального кошика. Якщо ви вперше тут — система зареєструє вас автоматично.</p>
+<div class="login-container">
+    <h2 id="login-title">Вхід Клієнта</h2>
+    
+    <div class="role-selector">
+        <button class="role-btn active" onclick="setRole('client')">Клієнт</button>
+        <button class="role-btn" onclick="setRole('admin')">Адмін</button>
     </div>
 
-    <form method="POST" class="space-y-4">
-        {% csrf_token %}
-        <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Ім'я</label>
-            <input type="text" name="first_name" class="w-full bg-black border border-gray-800 p-3 rounded-xl text-sm text-white focus:outline-none focus:border-purple-600 font-bold" required>
+    <form method="POST" action="{% url 'login' %}">
+        {% csrf_block %}
+        <div style="position: relative;">
+            <input type="text" name="username" id="username" placeholder="Логін" autocomplete="off" oninput="fetchSuggestions(this.value)">
+            <div id="suggestions-box" style="position: absolute; background: #25283d; width: 100%; border-radius: 0 0 6px 6px; z-index: 10; text-align: left; max-height: 150px; overflow-y: auto;"></div>
         </div>
-        <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Прізвище</label>
-            <input type="text" name="last_name" class="w-full bg-black border border-gray-800 p-3 rounded-xl text-sm text-white focus:outline-none focus:border-purple-600 font-bold" required>
-        </div>
-        <div>
-            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Електронна пошта (Email)</label>
-            <input type="email" name="email" class="w-full bg-black border border-gray-800 p-3 rounded-xl text-sm text-white focus:outline-none focus:border-purple-600 font-mono" required>
-        </div>
-        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest transition shadow-lg shadow-purple-950/40">Увійти в Маркет</button>
+        
+        <input type="password" name="password" placeholder="Пароль">
+        <button type="submit" class="submit-btn">УВІЙТИ</button>
     </form>
+    
+    <a href="/register/" class="reg-link" id="reg-link">Ще немає акаунту? Реєстрація</a>
 </div>
 
-{% endblock %}
+<script>
+    // Скрипт зміни інтерфейсу Клієнт / Адмін
+    function setRole(role) {
+        const title = document.getElementById('login-title');
+        const regLink = document.getElementById('reg-link');
+        const buttons = document.querySelectorAll('.role-btn');
+        
+        buttons.forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+
+        if(role === 'admin') {
+            title.innerText = 'Вхід Адміна';
+            title.style.color = '#ff007f';
+            title.style.textShadow = '0 0 10px #ff007f';
+            regLink.style.display = 'none'; // Адміни не реєструються самі
+        } else {
+            title.innerText = 'Вхід Клієнта';
+            title.style.color = '#00f2fe';
+            title.style.textShadow = '0 0 10px #00f2fe';
+            regLink.style.display = 'block';
+        }
+    }
+
+    // Скрипт Автопідстановки (Починаєш писати — підтягує клієнтів)
+    function fetchSuggestions(val) {
+        const box = document.getElementById('suggestions-box');
+        if (val.length < 1) { box.innerHTML = ''; return; }
+        
+        fetch(`/api/suggest-customers/?q=${val}`)
+            .then(res => res.json())
+            .then(data => {
+                box.innerHTML = '';
+                data.forEach(user => {
+                    let div = document.createElement('div');
+                    div.style.padding = '10px';
+                    div.style.cursor = 'pointer';
+                    div.style.borderBottom = '1px solid #333';
+                    div.innerText = user.username;
+                    // При кліці — автозаповнення
+                    div.onclick = function() {
+                        document.getElementById('username').value = user.username;
+                        box.innerHTML = '';
+                    };
+                    box.appendChild(div);
+                });
+            });
+    }
+</script>
+</body>
+</html>
