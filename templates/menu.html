@@ -266,7 +266,7 @@
                     <div class="product-card">
                         <div>
                             {% if product.image %}
-                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-img">
+                                <img src="{{ product.image }}" alt="{{ product.name }}" class="product-img">
                             {% else %}
                                 <div class="product-img" style="display: flex; align-items: center; justify-content: center; color: #555;">Немає фото</div>
                             {% endif %}
